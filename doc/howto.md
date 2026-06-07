@@ -79,7 +79,7 @@ mv <unzipped-folder> <version>
 
 # Build this project
 
-```
+```sh
 cd <project-root-dir>
 
 keytool -genpair -keystore <file>.p12 -alias <alias> -keyalg RSA -keysize 2048 -storetype PKCS12 -validity 365
