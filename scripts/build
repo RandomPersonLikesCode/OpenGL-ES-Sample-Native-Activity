@@ -1,0 +1,150 @@
+#!/data/data/com.termux/files/usr/bin/env bash
+
+# Build script to build the final APK
+# Copyright (c) 2026 RandomPerson
+# SPDX-License-Identifier: MIT
+
+set -e
+
+# Version/Variant
+
+SDK_VERSION="34"
+NDK_VERSION="29.0.14206865"
+
+LIB_ARCH="arm64-v8a"
+COMPILE_ARCH="aarch64"
+
+# Packages
+
+SDK_PATH="$ANDROID_HOME/platforms/android-$SDK_VERSION/android.jar"
+NDK_PATH="$ANDROID_NDK_HOME/$NDK_VERSION"
+
+# Tools
+
+AAPT2="aapt2"
+ZIP="zip"
+ZIPALIGN="zipalign"
+APKSIGNER="apksigner"
+
+CLANG="$NDK_PATH/toolchains/llvm/prebuilt/linux-aarch64/bin/$COMPILE_ARCH-linux-android$SDK_VERSION-clang"
+
+# Directories
+
+CACHE="./.cache"
+
+BUILD="./.build"
+APK="$BUILD/apk"
+RES_B="$BUILD/res"
+LIB="$BUILD/lib"
+
+RES_SRC="./res"
+
+C_INCL_SRC="./src"
+C_INCL_GLUE="$NDK_PATH/sources/android/native_app_glue"
+
+SCRIPT_BUILD="./scripts"
+
+CP_DEST="/sdcard/Download/"
+
+# Files
+
+MANIFEST="./AndroidManifest.xml"
+
+FLATS="$RES_B/*.flat"
+
+C_BUILD_MAIN="$SCRIPT_BUILD/build_main.c"
+C_BUILD_DEPS="$SCRIPT_BUILD/build_deps.c"
+
+LIB_MAIN="$LIB/$LIB_ARCH/libmain.so"
+LIB_DEPS="$CACHE/libdeps.o"
+
+BUILD_DEPS="$SCRIPT_BUILD/build_deps.c"
+BUILD_MAIN="$SCRIPT_BUILD/build_main.c"
+
+APK_UNSIGNED="$APK/app-unsigned.apk"
+APK_ALIGNED="$APK/app-aligned.apk"
+APK_SIGNED="$APK/app-signed.apk"
+
+APK_ZU="apk/app-unsigned.apk"
+LIB_Z="lib"
+
+# Flags
+
+AAPT2_CF="compile -o $RES_B --dir $RES_SRC"
+AAPT2_LF="link -I $SDK_PATH --manifest $MANIFEST -o $APK_UNSIGNED $FLATS"
+
+ZIP_F="-0 -ur $APK_ZU $LIB_Z"
+ZIPALIGN_F="-v 4 $APK_UNSIGNED $APK_ALIGNED"
+
+APKSIGNER_F="sign --ks $KS --ks-key-alias $KS_ALIAS --ks-pass pass:$KS_PASS --out $APK_SIGNED $APK_ALIGNED"
+
+CLANG_COF="-std=c99 -pedantic -Wall -Wextra -Wno-format-pedantic -Wno-strict-prototypes -Wno-unused-parameter -Werror -O0 -g -fno-omit-frame-pointer -I$C_INCL_GLUE -c -o"
+CLANG_CFF="-std=c99 -pedantic -Wall -Wextra -Wno-strict-prototypes -Wno-unused-parameter -Werror -O0 -g -fno-omit-frame-pointer -I$C_INCL_SRC -I$C_INCL_GLUE -shared -fPIC -o"
+CLANG_LF="-landroid -llog -lEGL -lGLESv3"
+
+# Checking
+
+if [[ "$CLEAN" == "true" ]]; then
+  echo "Cleaning build artifacts..."
+  rm -rf $BUILD
+  echo "Done"
+  exit 0
+fi
+
+if [[ ! -v KS ]]; then
+  echo "Keystore file is not set"
+  exit 1
+elif [[ ! -f "$KS" ]]; then
+  echo "Keystore \"$KS\" file does not exist"
+  exit 1
+fi
+
+if [[ ! -v KS_ALIAS ]]; then
+  echo "Keystore alias is not set"
+  exit 1
+fi
+
+if [[ ! -v KS_PASS ]]; then
+  echo "Keystore password is not set"
+  exit 1
+fi
+
+rm -rf $BUILD
+
+if [[ ! -d "$BUILD" ]]; then
+  mkdir -p $CACHE $APK $RES_B $LIB/$LIB_ARCH
+fi
+
+# Build process
+
+echo "Compiling resources..."
+$AAPT2 $AAPT2_CF
+
+echo "Linking resources..."
+$AAPT2 $AAPT2_LF
+
+if [[ ! -f "$LIB_DEPS" ]]; then
+  echo "Compiling C dependencies..."
+  $CLANG $CLANG_COF $LIB_DEPS $BUILD_DEPS
+fi
+
+echo "Linking C sources..."
+$CLANG $CLANG_CFF $LIB_MAIN $BUILD_MAIN $LIB_DEPS $CLANG_LF
+
+echo "Zipping libraries..."
+cd $BUILD
+$ZIP $ZIP_F
+cd $OLDPWD
+
+echo "Aligning APK..."
+$ZIPALIGN $ZIPALIGN_F
+
+echo "Signing APK..."
+$APKSIGNER $APKSIGNER_F
+
+if [[ -v COPY ]]; then
+  echo "Copying APK to $CP_DEST..."
+  cp $APK_SIGNED $CP_DEST
+fi
+
+echo "Done"
