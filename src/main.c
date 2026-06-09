@@ -19,21 +19,26 @@ void cmd_callback_handler(struct android_app *app, int32_t cmd) {
 
   switch (cmd) {
     case APP_CMD_INIT_WINDOW:
-      egl_window_create_dp_ctx(egl_window);
+      egl_window_create_dp_ctx(egl_window); /* Ignored in 2nd call after init */
       egl_window_create_sf(egl_window, app->window);
 
-      egl_window_get_wd_size(egl_window, &egl_window->window_gl_vp_cw,
-        &egl_window->window_gl_vp_ch);
+      if (!egl_window->gl_renderer.renderer_is_init) {
+        egl_window_get_wd_size(egl_window, &egl_window->window_gl_vp_cw,
+          &egl_window->window_gl_vp_ch);
 
-      glViewport(0, 0, egl_window->window_gl_vp_cw,
-        egl_window->window_gl_vp_ch);
+        glViewport(0, 0, egl_window->window_gl_vp_cw,
+          egl_window->window_gl_vp_ch);
+
+        LOGI("GL viewport is set");
+
+        egl_window->gl_renderer.renderer_is_init = true;
+      }
 
       break;
     case APP_CMD_TERM_WINDOW:
       egl_window_destroy_sf(egl_window);
 
       break;
-
     case APP_CMD_DESTROY:
       egl_window_destroy_dp_ctx(egl_window);
 
@@ -95,7 +100,7 @@ void android_main(struct android_app *app) {
         glViewport(0, 0, egl_window.window_gl_vp_lw,
           egl_window.window_gl_vp_lh);
 
-        LOGI("OpenGL Viewport Resized");
+        LOGI("OpenGL viewport resized");
       }
 
       glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
