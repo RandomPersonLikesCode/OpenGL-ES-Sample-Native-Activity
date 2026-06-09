@@ -79,7 +79,7 @@ ZIPALIGN_F="-v 4 $APK_UNSIGNED $APK_ALIGNED"
 APKSIGNER_F="sign --ks $KS --ks-key-alias $KS_ALIAS --ks-pass pass:$KS_PASS --out $APK_SIGNED $APK_ALIGNED"
 
 CLANG_COF="-std=c99 -pedantic -Wall -Wextra -Wno-format-pedantic -Wno-strict-prototypes -Wno-unused-parameter -Werror -O0 -g -fno-omit-frame-pointer -I$C_INCL_GLUE -c -o"
-CLANG_CFF="-std=c99 -pedantic -Wall -Wextra -Wno-strict-prototypes -Wno-unused-parameter -Werror -O0 -g -fno-omit-frame-pointer -I$C_INCL_SRC -I$C_INCL_GLUE -shared -fPIC -o"
+CLANG_CFF="-std=c99 -pedantic -Wall -Wextra -Wno-strict-prototypes -Werror -O0 -g -fno-omit-frame-pointer -I$C_INCL_SRC -I$C_INCL_GLUE -shared -fPIC -o"
 CLANG_LF="-landroid -llog -lEGL -lGLESv3"
 
 # Checking
