@@ -16,8 +16,7 @@ struct EGLWindow {
   EGLSurface window_surface;
 
   EGLConfig window_config;
-  EGLint window_cfg_num;
-  EGLint window_cfg_size;
+  EGLint window_cfg_num, window_cfg_size;
   
   EGLint window_dp_attribs[11];
   EGLint window_ctx_attribs[7];
@@ -29,11 +28,12 @@ struct EGLWindow {
     l last
     w/h width/height
   */
-  EGLint window_gl_vp_cw, window_gl_vp_ch,
-    window_gl_vp_lw, window_gl_vp_lh;
+  EGLint window_gl_vp_cw, window_gl_vp_ch, window_gl_vp_lw, window_gl_vp_lh;
 
   /* Is window minimized/unfocused */
   bool window_status;
+
+  struct GLRenderer gl_renderer;
 };
 
 void egl_window_get_wd_size(struct EGLWindow *window, EGLint *width,
