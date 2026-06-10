@@ -28,7 +28,10 @@ struct EGLWindow {
     l last
     w/h width/height
   */
-  EGLint window_gl_vp_cw, window_gl_vp_ch, window_gl_vp_lw, window_gl_vp_lh;
+  EGLint window_gl_vp_cw, window_gl_vp_ch, window_gl_vp_lw,
+    window_gl_vp_lh;
+
+  EGLBoolean window_fnc_res;
 
   /* Is window minimized/unfocused */
   bool window_status;
@@ -39,38 +42,35 @@ struct EGLWindow {
 void egl_window_get_wd_size(struct EGLWindow *window, EGLint *width,
   EGLint *height) {
 
-  EGLBoolean egl_fnc_res = EGL_FALSE;
-
   if (window->window_display != EGL_NO_DISPLAY &&
     window->window_surface != EGL_NO_SURFACE) {
 
-    egl_fnc_res = eglQuerySurface(window->window_display,
+    window->window_fnc_res = eglQuerySurface(window->window_display,
       window->window_surface, EGL_WIDTH, width);
 
-    EGL_FNC_CALL_CHECK(egl_fnc_res, EGL_TRUE);
+    EGL_FNC_CALL_CHECK(window->window_fnc_res, EGL_TRUE);
 
-    egl_fnc_res = eglQuerySurface(window->window_display,
+    window->window_fnc_res = eglQuerySurface(window->window_display,
       window->window_surface, EGL_HEIGHT, height);
 
-    EGL_FNC_CALL_CHECK(egl_fnc_res, EGL_TRUE);
+    EGL_FNC_CALL_CHECK(window->window_fnc_res, EGL_TRUE);
   }
 }
 
 void egl_window_create_dp_ctx(struct EGLWindow *window) {
-  EGLBoolean egl_fnc_res = EGL_FALSE;
-
   if (window->window_display == EGL_NO_DISPLAY) {
     window->window_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
-    egl_fnc_res = eglInitialize(window->window_display, NULL, NULL);
+    window->window_fnc_res = eglInitialize(window->window_display, NULL,
+      NULL);
 
-    EGL_FNC_CALL_CHECK(egl_fnc_res, EGL_TRUE);
+    EGL_FNC_CALL_CHECK(window->window_fnc_res, EGL_TRUE);
 
-    egl_fnc_res = eglChooseConfig(window->window_display,
+    window->window_fnc_res = eglChooseConfig(window->window_display,
       window->window_dp_attribs, &window->window_config,
       window->window_cfg_size, &window->window_cfg_num);
 
-    EGL_FNC_CALL_CHECK(egl_fnc_res, EGL_TRUE);
+    EGL_FNC_CALL_CHECK(window->window_fnc_res, EGL_TRUE);
 
     LOGI("EGL display created");
   }
@@ -86,7 +86,6 @@ void egl_window_create_dp_ctx(struct EGLWindow *window) {
 }
 
 void egl_window_destroy_dp_ctx(struct EGLWindow *window) {
-  EGLBoolean egl_fnc_res = EGL_FALSE;
   window->window_status = false;
 
   if (window->window_display != EGL_NO_DISPLAY &&
@@ -99,14 +98,14 @@ void egl_window_destroy_dp_ctx(struct EGLWindow *window) {
       it's ok for now.
     */
 
-    egl_fnc_res = eglDestroyContext(window->window_display,
+    window->window_fnc_res = eglDestroyContext(window->window_display,
       window->window_context);
 
-    EGL_FNC_CALL_CHECK(egl_fnc_res, EGL_TRUE);
+    EGL_FNC_CALL_CHECK(window->window_fnc_res, EGL_TRUE);
 
-    egl_fnc_res = eglTerminate(window->window_display);
+    window->window_fnc_res = eglTerminate(window->window_display);
 
-    EGL_FNC_CALL_CHECK(egl_fnc_res, EGL_TRUE);
+    EGL_FNC_CALL_CHECK(window->window_fnc_res, EGL_TRUE);
 
     window->window_context = EGL_NO_CONTEXT;
     window->window_display = EGL_NO_DISPLAY;
@@ -115,8 +114,8 @@ void egl_window_destroy_dp_ctx(struct EGLWindow *window) {
   }
 }
 
-void egl_window_create_sf(struct EGLWindow *window, NativeWindowType native_window) {
-  EGLBoolean egl_fnc_res = EGL_FALSE;
+void egl_window_create_sf(struct EGLWindow *window,
+  NativeWindowType native_window) {
 
   if (window->window_context != EGL_NO_CONTEXT &&
     window->window_display != EGL_NO_DISPLAY) {
@@ -128,10 +127,11 @@ void egl_window_create_sf(struct EGLWindow *window, NativeWindowType native_wind
 
     LOGI("EGL surface created");
 
-    egl_fnc_res = eglMakeCurrent(window->window_display, window->window_surface,
-      window->window_surface, window->window_context);
+    window->window_fnc_res = eglMakeCurrent(window->window_display,
+      window->window_surface, window->window_surface,
+      window->window_context);
 
-    EGL_FNC_CALL_CHECK(egl_fnc_res, EGL_TRUE);
+    EGL_FNC_CALL_CHECK(window->window_fnc_res, EGL_TRUE);
 
     window->window_status = true;
 
@@ -140,21 +140,20 @@ void egl_window_create_sf(struct EGLWindow *window, NativeWindowType native_wind
 }
 
 void egl_window_destroy_sf(struct EGLWindow *window) {
-  EGLBoolean egl_fnc_res = EGL_FALSE;
   window->window_status = false;
 
   if (window->window_display != EGL_NO_DISPLAY &&
     window->window_surface != EGL_NO_SURFACE) {
 
-    egl_fnc_res = eglMakeCurrent(window->window_display, EGL_NO_SURFACE,
-      EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    window->window_fnc_res = eglMakeCurrent(window->window_display,
+      EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 
-    EGL_FNC_CALL_CHECK(egl_fnc_res, EGL_TRUE);
+    EGL_FNC_CALL_CHECK(window->window_fnc_res, EGL_TRUE);
 
-    egl_fnc_res = eglDestroySurface(window->window_display,
+    window->window_fnc_res = eglDestroySurface(window->window_display,
       window->window_surface);
 
-    EGL_FNC_CALL_CHECK(egl_fnc_res, EGL_TRUE);
+    EGL_FNC_CALL_CHECK(window->window_fnc_res, EGL_TRUE);
 
     window->window_surface = EGL_NO_SURFACE;
 
