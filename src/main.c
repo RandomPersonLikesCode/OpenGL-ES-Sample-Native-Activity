@@ -19,7 +19,8 @@ void cmd_callback_handler(struct android_app *app, int32_t cmd) {
 
   switch (cmd) {
     case APP_CMD_INIT_WINDOW:
-      egl_window_create_dp_ctx(egl_window); /* Ignored in 2nd call after init */
+      egl_window_create_dp(egl_window);
+      egl_window_create_ctx(egl_window);
       egl_window_create_sf(egl_window, app->window);
 
       if (!egl_window->gl_renderer.renderer_is_init) {
@@ -40,7 +41,8 @@ void cmd_callback_handler(struct android_app *app, int32_t cmd) {
 
       break;
     case APP_CMD_DESTROY:
-      egl_window_destroy_dp_ctx(egl_window);
+      egl_window_destroy_ctx(egl_window);
+      egl_window_destroy_dp(egl_window);
 
       break;
   }
