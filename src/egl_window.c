@@ -57,7 +57,7 @@ void egl_window_get_wd_size(struct EGLWindow *window, EGLint *width,
   }
 }
 
-void egl_window_create_dp_ctx(struct EGLWindow *window) {
+void egl_window_create_dp(struct EGLWindow *window) {
   if (window->window_display == EGL_NO_DISPLAY) {
     window->window_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
@@ -74,7 +74,9 @@ void egl_window_create_dp_ctx(struct EGLWindow *window) {
 
     LOGI("EGL display created");
   }
+}
 
+void egl_window_create_ctx(struct EGLWindow *window) {
   if (window->window_context == EGL_NO_CONTEXT) {
     window->window_context = eglCreateContext(window->window_display,
       window->window_config, EGL_NO_CONTEXT, window->window_ctx_attribs);
@@ -85,12 +87,10 @@ void egl_window_create_dp_ctx(struct EGLWindow *window) {
   }
 }
 
-void egl_window_destroy_dp_ctx(struct EGLWindow *window) {
+void egl_window_destroy_ctx(struct EGLWindow *window) {
   window->window_status = false;
 
-  if (window->window_display != EGL_NO_DISPLAY &&
-    window->window_context != EGL_NO_CONTEXT) {
-
+  if (window->window_context != EGL_NO_CONTEXT) {
     /*
       TODO: Somehow that eglDestroyContext is not properly
       called because of unknown reason, so stuff below
@@ -103,14 +103,21 @@ void egl_window_destroy_dp_ctx(struct EGLWindow *window) {
 
     EGL_FNC_CALL_CHECK(window->window_fnc_res, EGL_TRUE);
 
+    window->window_context = EGL_NO_CONTEXT;
+
+    LOGI("EGL context destroyed");
+  }
+}
+
+void egl_window_destroy_dp(struct EGLWindow *window) {
+  if (window->window_display != EGL_NO_DISPLAY) {
     window->window_fnc_res = eglTerminate(window->window_display);
 
     EGL_FNC_CALL_CHECK(window->window_fnc_res, EGL_TRUE);
 
-    window->window_context = EGL_NO_CONTEXT;
     window->window_display = EGL_NO_DISPLAY;
 
-    LOGI("EGL display/context destroyed");
+    LOGI("EGL display destroyed");
   }
 }
 
