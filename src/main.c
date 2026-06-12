@@ -69,23 +69,15 @@ void android_main(struct android_app *app) {
     }
   };
 
+  struct AndroidCmdState cmd_state = {0};
+
   app->userData = &egl_window;
   app->onAppCmd = &cmd_callback_handler;
 
   while (true) {
-    int id = 0;
-    int events = 0;
-    struct android_poll_source *poll_src = NULL;
+    handle_cmd_state(&cmd_state, app, &egl_window);
 
-    while ((id = ALooper_pollOnce(egl_window.window_status ? 0 : -1,
-      NULL, &events, (void**)&poll_src)) >= 0) {
-
-      if (poll_src != NULL) {
-        poll_src->process(app, poll_src);
-      }
-    }
-
-    if (app->destroyRequested != 0) {
+    if (cmd_state.state_destroy_status) {
       break;
     }
 
@@ -105,7 +97,7 @@ void android_main(struct android_app *app) {
         LOGI("OpenGL viewport resized");
       }
 
-      glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+      glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
 
       eglSwapBuffers(egl_window.window_display, egl_window.window_surface);

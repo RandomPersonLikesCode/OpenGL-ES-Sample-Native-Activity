@@ -1,4 +1,5 @@
 #include "logging.c"
 #include "gl_renderer.c"
 #include "egl_window.c"
+#include "android_cmd_state.c"
 #include "main.c"
