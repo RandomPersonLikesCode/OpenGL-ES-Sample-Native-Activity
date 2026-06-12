@@ -20,17 +20,7 @@ struct EGLWindow {
   
   EGLint window_dp_attribs[11];
   EGLint window_ctx_attribs[7];
-
-  /*
-    gl opengl
-    vp viewport
-    c current
-    l last
-    w/h width/height
-  */
-  EGLint window_gl_vp_cw, window_gl_vp_ch, window_gl_vp_lw,
-    window_gl_vp_lh;
-
+  
   EGLBoolean window_fnc_res;
 
   /* Is window minimized/unfocused */

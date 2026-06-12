@@ -24,11 +24,11 @@ void cmd_callback_handler(struct android_app *app, int32_t cmd) {
       egl_window_create_sf(egl_window, app->window);
 
       if (!egl_window->gl_renderer.renderer_is_init) {
-        egl_window_get_wd_size(egl_window, &egl_window->window_gl_vp_cw,
-          &egl_window->window_gl_vp_ch);
+        egl_window_get_wd_size(egl_window, &egl_window->gl_renderer.renderer_vp_cw,
+          &egl_window->gl_renderer.renderer_vp_ch);
 
-        glViewport(0, 0, egl_window->window_gl_vp_cw,
-          egl_window->window_gl_vp_ch);
+        glViewport(0, 0, egl_window->gl_renderer.renderer_vp_cw,
+          egl_window->gl_renderer.renderer_vp_ch);
 
         LOGI("GL viewport is set");
 
@@ -82,17 +82,17 @@ void android_main(struct android_app *app) {
     }
 
     if (egl_window.window_status) {
-      egl_window_get_wd_size(&egl_window, &egl_window.window_gl_vp_cw,
-        &egl_window.window_gl_vp_ch);
+      egl_window_get_wd_size(&egl_window, &egl_window.gl_renderer.renderer_vp_cw,
+        &egl_window.gl_renderer.renderer_vp_ch);
 
-      if (egl_window.window_gl_vp_cw != egl_window.window_gl_vp_lw ||
-        egl_window.window_gl_vp_ch != egl_window.window_gl_vp_lh) {
+      if (egl_window.gl_renderer.renderer_vp_cw != egl_window.gl_renderer.renderer_vp_lw ||
+        egl_window.gl_renderer.renderer_vp_ch != egl_window.gl_renderer.renderer_vp_lh) {
 
-        egl_window.window_gl_vp_lw = egl_window.window_gl_vp_cw;
-        egl_window.window_gl_vp_lh = egl_window.window_gl_vp_ch;
+        egl_window.gl_renderer.renderer_vp_lw = egl_window.gl_renderer.renderer_vp_cw;
+        egl_window.gl_renderer.renderer_vp_lh = egl_window.gl_renderer.renderer_vp_ch;
 
-        glViewport(0, 0, egl_window.window_gl_vp_lw,
-          egl_window.window_gl_vp_lh);
+        glViewport(0, 0, egl_window.gl_renderer.renderer_vp_lw,
+          egl_window.gl_renderer.renderer_vp_lh);
 
         LOGI("OpenGL viewport resized");
       }
